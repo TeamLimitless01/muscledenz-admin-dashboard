@@ -42,6 +42,7 @@ interface HomePageData {
   top_banners: ImageFile[];
   about_images: ImageFile[];
   reviews: Review[];
+  headLineText: string;
 }
 
 // --- Custom Components for better UI ---
@@ -191,6 +192,7 @@ export default function HomePageEditor() {
             ...item,
           })) || [],
         reviews: res.data.reviews || [],
+        headLineText: res.data.headLineText || "",
       });
     } catch (err) {
       console.error("Fetch error:", err);
@@ -271,7 +273,7 @@ export default function HomePageEditor() {
 
   // UPDATE all sections (partial save)
   const handleSectionSave = async (
-    section: "banners" | "about" | "reviews"
+    section: "banners" | "about" | "reviews" | "headLineText"
   ) => {
     if (!data) return;
 
@@ -297,6 +299,8 @@ export default function HomePageEditor() {
           description: r.description,
           stars: r.stars,
         }));
+      } else if (section === "headLineText") {
+        payload.headLineText = data.headLineText;
       }
 
       await strapi.axios.put("home-page", { data: payload });
@@ -353,6 +357,7 @@ export default function HomePageEditor() {
   const bannerImages = useMemo(() => data?.top_banners || [], [data]);
   const aboutImages = useMemo(() => data?.about_images || [], [data]);
   const reviewsData = useMemo(() => data?.reviews || [], [data]);
+  const headLineText = useMemo(() => data?.headLineText || "", [data]);
 
   if (loading)
     return (
@@ -378,7 +383,6 @@ export default function HomePageEditor() {
           <RefreshCw
             className="w-6 h-6 mr-3 text-black cursor-pointer hover:text-gray-500 transition-colors"
             onClick={fetchData}
-            title="Refresh Data"
           />
           Home Page Editor
         </h1>
@@ -398,6 +402,11 @@ export default function HomePageEditor() {
           <TabsTrigger value="reviews">
             Reviews ({reviewsData.length})
           </TabsTrigger>
+           <TabsTrigger value="headLineText">
+            HeadLine Text
+          </TabsTrigger>
+
+          
         </TabsList>
 
         {/* --- BANNERS --- */}
@@ -563,6 +572,33 @@ export default function HomePageEditor() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* headLine Text - input field */}
+      <Card className="shadow-xl border-t-4 border-blue-500">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl font-semibold">
+            HeadLine Text
+          </CardTitle>
+          <Button
+            onClick={() => handleSectionSave("headLineText")}
+            disabled={uploading}
+            className="bg-green-600 hover:bg-green-700 transition-colors"
+          >
+            {uploading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              "Save HeadLine Text"
+            )}
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Input
+            placeholder="HeadLine Text"
+            value={headLineText}
+            onChange={(e) => setData({ ...data, headLineText: e.target.value })}
+          />
+        </CardContent>
+      </Card>
 
       {/* --- REVIEW MODAL --- */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

@@ -140,6 +140,10 @@ export default function ProductPage({ params }: ProductPageProps) {
                   <span className="font-semibold">Discount (%) : </span>
                   <span className="text-muted-foreground ml-2">{product.discount || 0}%</span>                  
                 </div>
+                 <div>
+                  <span className="font-semibold">Ecommerce URL : </span>
+                  <a className="ml-2 underline"  href={product.ecomUrl} target="_blank" rel="noopener noreferrer">{product.ecomUrl || "Not Added"}</a>                  
+                </div>
                 {/* <div>
                   <span className="font-semibold">Status:</span>
                   <Badge variant={product.status === "active" ? "default" : "secondary"} className="ml-2">

@@ -67,6 +67,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       collectionType: "",
       discount: "",
       category: "",
+      ecomUrl: "",
     },
   });
 
@@ -82,6 +83,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           ? String(product.collectionType)
           : "",
         category: product.category?.id ? String(product.category.id) : "",
+        ecomUrl: product.ecomUrl ?? "",
       });
       setExistingImages(product.images ?? []);
       setExistingThumbnail(product.thumbnail ?? null);
@@ -175,6 +177,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         images: finalImageIds,
         thumbnail: finalThumbnailId,
         collectionType: formData.collectionType || "",
+        ecomUrl: formData.ecomUrl || "",
       });
 
       toast.success("✅ Product updated successfully");
@@ -509,7 +512,26 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 </div>
               </CardContent>
             </Card>
+          
+                   
+                  <div className="space-y-2">
+                    <Label htmlFor="discount">Amazon/Flipkart URL... *</Label>
+                    <Input
+                      id="discount"
+                  placeholder="ex: https://www.amazon.in/your-product-url"
+                      type="text"
+                      {...register("ecomUrl", {
+                        required: false,
+                      })}
+                    />
+                    {errors.ecomUrl && (
+                      <p className="text-red-500 text-sm">
+                        {errors.ecomUrl.message}
+                      </p>
+                    )}
+                  </div>
 
+          
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">

@@ -45,6 +45,7 @@ export default function NewProductPage() {
     stock: "",
     category: "",
     discount: "",
+    ecomUrl: "",
   });
 
   const { data: catData }: any = useStrapi("categories", {});
@@ -138,6 +139,7 @@ export default function NewProductPage() {
         collectionType: formData.collectionType || "",
         thumbnail: uploadedThumbnail ? uploadedThumbnail : undefined,
         images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        ecomUrl: formData.ecomUrl || "",
       });
 
       toast.success("✅ Product created successfully");
@@ -379,6 +381,23 @@ export default function NewProductPage() {
                     </SelectContent>
                   </Select>
                 </div>
+              </CardContent>
+            </Card>
+
+              <Card>
+              <CardHeader>
+                <CardTitle>E-commerce URL</CardTitle>
+                <CardDescription>Paste Product Amazon/Flipkart URL...</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  type="text"
+                  placeholder="ex: https://www.amazon.in/your-product-url"
+                  value={formData?.ecomUrl}
+                  onChange={(e)=>setFormData({...formData,ecomUrl:e.target.value})}
+                  required
+                />
+               
               </CardContent>
             </Card>
 
