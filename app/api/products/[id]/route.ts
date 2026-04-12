@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
+import mongoose from 'mongoose';
+
+const extractId = (value: any) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    if (Array.isArray(value.connect) && value.connect.length > 0) {
+      return value.connect[0];
+    }
+    if (value.id || value._id) return value.id || value._id;
+  }
+  return null;
+};
 
 export async function GET(
   req: Request,
@@ -25,17 +38,19 @@ export async function PATCH(
   try {
     await dbConnect();
     let body = await req.json();
-    
-    // Handle Strapi-style { data: { ... } } wrapper
     let data = body.data || body;
 
-    // Handle Strapi-style { connect: [ id ] } relations
-    if (data.category && typeof data.category === 'object') {
-      if (data.category.connect && data.category.connect.length > 0) {
-        data.category = data.category.connect[0];
-      } else if (data.category.connect && (data.category.connect.length === 0 || data.category.connect[0] === null)) {
-        data.category = null;
-      }
+    const categoryId = extractId(data.category);
+    if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+        data.category = categoryId;
+    } else {
+        // If it was explicitly intended to be null, set it to null
+        // Otherwise, if it was just missing/invalid, remove it to prevent overwrite
+        if (data.category === null || (typeof data.category === 'object' && data.category?.connect?.[0] === null)) {
+            data.category = null;
+        } else {
+            delete data.category;
+        }
     }
 
     const product = await Product.findByIdAndUpdate(params.id, data, { new: true });

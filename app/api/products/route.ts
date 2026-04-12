@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
+import mongoose from 'mongoose';
+
+// Helper to extract a single ID from various Strapi/Direct formats
+const extractId = (value: any) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    // Check for Strapi 'connect' array
+    if (Array.isArray(value.connect) && value.connect.length > 0) {
+      return value.connect[0];
+    }
+    // Check for direct ID property if it's an object from a previous find
+    if (value.id || value._id) return value.id || value._id;
+  }
+  return null;
+};
 
 export async function GET() {
   try {
@@ -16,17 +32,14 @@ export async function POST(req: Request) {
   try {
     await dbConnect();
     let body = await req.json();
-    
-    // Handle Strapi-style { data: { ... } } wrapper
     let data = body.data || body;
 
-    // Handle Strapi-style { connect: [ id ] } relations
-    if (data.category && typeof data.category === 'object') {
-      if (data.category.connect && data.category.connect.length > 0) {
-        data.category = data.category.connect[0]; // Take the first ID
-      } else if (data.category.connect && data.category.connect[0] === null) {
-        data.category = null;
-      }
+    // Normalize Category Relation
+    const categoryId = extractId(data.category);
+    if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+        data.category = categoryId;
+    } else {
+        delete data.category; // Avoid casting null/invalid strings if not provided
     }
 
     const product = await Product.create(data);

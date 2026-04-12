@@ -223,7 +223,7 @@ export default function ProductsPage() {
                     {products?.data?.map((product: any) => {
                       const stockStatus = getStockStatus(product.stock);
                       return (
-                        <TableRow key={product.documentId}>
+                        <TableRow key={product.id}>
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <img
@@ -274,14 +274,14 @@ export default function ProductsPage() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem asChild>
                                   <Link
-                                    href={`/dashboard/products/${product.documentId}`}
+                                    href={`/dashboard/products/${product.id}`}
                                   >
                                     <Eye className="mr-2 h-4 w-4" /> View
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                   <Link
-                                    href={`/dashboard/products/${product.documentId}/edit`}
+                                    href={`/dashboard/products/${product.id}/edit`}
                                   >
                                     <Edit className="mr-2 h-4 w-4" /> Edit
                                   </Link>
@@ -289,7 +289,7 @@ export default function ProductsPage() {
                                 <DropdownMenuItem
                                   onClick={() =>
                                     handleDelete(
-                                      product.documentId,
+                                      product.id,
                                       product.name
                                     )
                                   }

@@ -36,11 +36,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const router = useRouter();
 
   // Fetch product
-  const { data, error, isLoading }: any = useStrapi("products", {
+  const { data: product, error, isLoading }: any = useStrapi(`products/${id}`, {
     populate: ["images", "category", "thumbnail"],
-    filters: { documentId: id },
   });
-  const product = data?.data?.[0] || null;
 
   // Fetch categories
   const { data: catData }: any = useStrapi("categories", {});
@@ -129,8 +127,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
     setLoading(true);
     try {
-      let uploadedImageIds: number[] = [];
-      let uploadedThumbnailId: number | null = null;
+      let uploadedImageUrls: string[] = [];
+      let uploadedThumbnailUrl: string | null = null;
 
       // Upload new images
       if (newImages.length > 0) {
@@ -138,34 +136,31 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           newImages.map(async (file) => {
             const fd = new FormData();
             fd.append("files", file);
-            const res = await strapi.axios.post("/upload", fd, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
+            const res = await strapi.axios.post("/upload", fd);
             return res.data;
           })
         );
-        uploadedImageIds = uploads.flat().map((img: any) => img.id) || [];
+        // My /api/upload returns [{ url, id, name }]
+        uploadedImageUrls = uploads.flat().map((img: any) => img.url) || [];
       }
 
       // Upload thumbnail if changed
       if (newThumbnail) {
         const fd = new FormData();
         fd.append("files", newThumbnail);
-        const res = await strapi.axios.post("/upload", fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        uploadedThumbnailId = res.data?.[0]?.id ?? null;
+        const res = await strapi.axios.post("/upload", fd);
+        uploadedThumbnailUrl = res.data?.[0]?.url ?? null;
       }
 
-      const finalImageIds = [
-        ...existingImages.map((img: any) => img.id),
-        ...uploadedImageIds,
+      const finalImageUrls = [
+        ...existingImages.map((img: any) => img.url),
+        ...uploadedImageUrls,
       ];
 
-      const finalThumbnailId =
-        uploadedThumbnailId !== null
-          ? uploadedThumbnailId
-          : existingThumbnail?.id ?? null;
+      const finalThumbnailUrl =
+        uploadedThumbnailUrl !== null
+          ? uploadedThumbnailUrl
+          : existingThumbnail?.url ?? null;
 
       await strapi.update("products", id, {
         name: formData.name,
@@ -173,9 +168,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
         discount: Number(formData.discount),
-        category: formData.category ? parseInt(formData.category, 10) : null,
-        images: finalImageIds,
-        thumbnail: finalThumbnailId,
+        category: formData.category || null, // Removed parseInt
+        images: finalImageUrls,
+        thumbnail: finalThumbnailUrl,
         collectionType: formData.collectionType || "",
         ecomUrl: formData.ecomUrl || "",
       });
@@ -378,7 +373,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     {existingImages.map((image, index) => (
                       <div key={index} className="relative group">
                         <img
-                          src={image.url || "/placeholder.svg"}
+                          src={image?.url || "/placeholder.svg"}
                           alt={`Product ${index + 1}`}
                           className="w-full h-32 object-cover rounded-md"
                         />

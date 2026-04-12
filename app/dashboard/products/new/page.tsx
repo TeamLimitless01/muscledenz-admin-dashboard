@@ -89,22 +89,16 @@ export default function NewProductPage() {
     setLoading(true);
 
     try {
-      let uploadedThumbnail: number | null = null;
-      let uploadedImages: number[] = [];
+      let uploadedThumbnailUrl: string | null = null;
+      let uploadedImageUrls: string[] = [];
 
       // Upload thumbnail first
       if (thumbnail) {
         const formDataThumb = new FormData();
         formDataThumb.append("files", thumbnail);
 
-        const thumbRes: any = await strapi.axios.post(
-          "/upload",
-          formDataThumb,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-        uploadedThumbnail = thumbRes?.data?.[0]?.id || null;
+        const thumbRes: any = await strapi.axios.post("/upload", formDataThumb);
+        uploadedThumbnailUrl = thumbRes?.data?.[0]?.url || null;
       }
 
       // Upload gallery images
@@ -114,16 +108,12 @@ export default function NewProductPage() {
           formDataUpload.append("files", file);
         });
 
-        const uploadRes: any = await strapi.axios.post(
-          "/upload",
-          formDataUpload,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-        uploadedImages = uploadRes?.data?.map((f: any) => f.id);
+        const uploadRes: any = await strapi.axios.post("/upload", formDataUpload);
+        uploadedImageUrls = uploadRes?.data?.map((f: any) => f.url);
       } else {
         toast.error("Product Images Are Required!");
+        setLoading(false);
+        return;
       }
 
       // Create Product
@@ -132,13 +122,11 @@ export default function NewProductPage() {
         description: formData.description,
         price: Number.parseFloat(formData.price),
         stock: Number.parseInt(formData.stock),
-        discount: parseInt(formData.discount) || 0,
-        category: formData.category
-          ? { connect: [Number(formData.category)] }
-          : undefined,
+        discount: Number(formData.discount) || 0,
+        category: formData.category || null,
         collectionType: formData.collectionType || "",
-        thumbnail: uploadedThumbnail ? uploadedThumbnail : undefined,
-        images: uploadedImages.length > 0 ? uploadedImages : undefined,
+        thumbnail: uploadedThumbnailUrl,
+        images: uploadedImageUrls,
         ecomUrl: formData.ecomUrl || "",
       });
 
