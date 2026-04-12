@@ -452,12 +452,12 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((category: any) => (
+                          {categories?.map((category: any) => (
                             <SelectItem
-                              key={category.id}
-                              value={category.id.toString()}
+                              key={category?.id}
+                              value={category?.id?.toString()}
                             >
-                              {category.name}
+                              {category?.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

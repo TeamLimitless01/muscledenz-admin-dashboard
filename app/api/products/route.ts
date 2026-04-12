@@ -15,10 +15,24 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const data = await req.json();
+    let body = await req.json();
+    
+    // Handle Strapi-style { data: { ... } } wrapper
+    let data = body.data || body;
+
+    // Handle Strapi-style { connect: [ id ] } relations
+    if (data.category && typeof data.category === 'object') {
+      if (data.category.connect && data.category.connect.length > 0) {
+        data.category = data.category.connect[0]; // Take the first ID
+      } else if (data.category.connect && data.category.connect[0] === null) {
+        data.category = null;
+      }
+    }
+
     const product = await Product.create(data);
     return NextResponse.json(product, { status: 201 });
   } catch (error: any) {
+    console.error("POST Product Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

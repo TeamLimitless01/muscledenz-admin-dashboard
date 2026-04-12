@@ -24,13 +24,27 @@ export async function PATCH(
 ) {
   try {
     await dbConnect();
-    const data = await req.json();
+    let body = await req.json();
+    
+    // Handle Strapi-style { data: { ... } } wrapper
+    let data = body.data || body;
+
+    // Handle Strapi-style { connect: [ id ] } relations
+    if (data.category && typeof data.category === 'object') {
+      if (data.category.connect && data.category.connect.length > 0) {
+        data.category = data.category.connect[0];
+      } else if (data.category.connect && (data.category.connect.length === 0 || data.category.connect[0] === null)) {
+        data.category = null;
+      }
+    }
+
     const product = await Product.findByIdAndUpdate(params.id, data, { new: true });
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
     return NextResponse.json(product);
   } catch (error: any) {
+    console.error("PATCH Product Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
