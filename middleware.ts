@@ -14,7 +14,7 @@ export async function middleware(req: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    if (!token || token.role !== "admin") {
+    if (!token || token.type !== "Admin") {
       console.log("Redirecting to signin from admin route")
       return NextResponse.redirect(new URL("/auth/signin", req.url))
     }

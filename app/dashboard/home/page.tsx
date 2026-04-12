@@ -42,7 +42,7 @@ interface HomePageData {
   top_banners: ImageFile[];
   about_images: ImageFile[];
   reviews: Review[];
-  headLineText: string;
+  headlineText: string;
 }
 
 // --- Custom Components for better UI ---
@@ -177,22 +177,23 @@ export default function HomePageEditor() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Assuming 'home-page' is a Single Type in Strapi
-      const res: any = await strapi.find("home-page", { populate: "*" });
-      // Normalize data structure for internal state
+      const res: any = await strapi.find("home-page");
+      // Our local API returns the object directly or wrapped in { data }
+      const rawData = res.data || res;
+      
       setData({
-        top_banners:
-          res.data.top_banners?.map((item: any) => ({
-            id: item.id,
-            ...item,
-          })) || [],
-        about_images:
-          res.data.about_images?.map((item: any) => ({
-            id: item.id,
-            ...item,
-          })) || [],
-        reviews: res.data.reviews || [],
-        headLineText: res.data.headLineText || "",
+        top_banners: (rawData.top_banners || []).map((url: string, index: number) => ({
+          id: index,
+          url: url,
+          name: `Banner ${index + 1}`,
+        })),
+        about_images: (rawData.about_images || []).map((url: string, index: number) => ({
+          id: index,
+          url: url,
+          name: `About ${index + 1}`,
+        })),
+        reviews: rawData.reviews || [],
+        headlineText: rawData.headlineText || "",
       });
     } catch (err) {
       console.error("Fetch error:", err);
@@ -282,28 +283,16 @@ export default function HomePageEditor() {
 
       // Determine the payload based on the section
       if (section === "banners") {
-        // Collect only the IDs of the images to link to the single type entry
-        payload.top_banners = data.top_banners.map((img) => img.id);
+        payload.top_banners = data.top_banners.map((img) => img.url);
       } else if (section === "about") {
-        if (data.about_images.length !== 4) {
-          toast.error(
-            "Please upload exactly 4 images for the About section ❌"
-          );
-          return;
-        }
-        payload.about_images = data.about_images.map((img) => img.id);
+        payload.about_images = data.about_images.map((img) => img.url);
       } else if (section === "reviews") {
-        // Prepare the clean reviews array for the component field
-        payload.reviews = data.reviews.map((r) => ({
-          name: r.name,
-          description: r.description,
-          stars: r.stars,
-        }));
+        payload.reviews = data.reviews;
       } else if (section === "headLineText") {
-        payload.headLineText = data.headLineText;
+        payload.headlineText = data.headlineText;
       }
 
-      await strapi.axios.put("home-page", { data: payload });
+      await strapi.axios.post("home-page", payload);
       toast.success(`✅ ${section} section updated successfully!`);
     } catch (err) {
       console.error("Update failed:", err);
@@ -357,7 +346,7 @@ export default function HomePageEditor() {
   const bannerImages = useMemo(() => data?.top_banners || [], [data]);
   const aboutImages = useMemo(() => data?.about_images || [], [data]);
   const reviewsData = useMemo(() => data?.reviews || [], [data]);
-  const headLineText = useMemo(() => data?.headLineText || "", [data]);
+  const headlineText = useMemo(() => data?.headlineText || "", [data]);
 
   if (loading)
     return (
@@ -594,8 +583,8 @@ export default function HomePageEditor() {
         <CardContent className="space-y-6">
           <Input
             placeholder="HeadLine Text"
-            value={headLineText}
-            onChange={(e) => setData({ ...data, headLineText: e.target.value })}
+            value={headlineText}
+            onChange={(e) => setData({ ...data, headlineText: e.target.value })}
           />
         </CardContent>
       </Card>
