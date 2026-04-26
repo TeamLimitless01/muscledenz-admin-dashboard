@@ -13,7 +13,7 @@ export default function CreateDemoAdmin() {
   const [message, setMessage] = useState("");
 
   const handleCreateAdmin = async () => {
-    setLoading(true);
+  /*   setLoading(true);
     setStatus("idle");
     try {
       const res = await fetch("/api/setup-admin", { method: "POST" });
@@ -34,7 +34,7 @@ export default function CreateDemoAdmin() {
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
-    }
+    } */
   };
 
   return (
