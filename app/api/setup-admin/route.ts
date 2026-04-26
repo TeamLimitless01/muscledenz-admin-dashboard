@@ -8,17 +8,17 @@ export async function POST(req: Request) {
     await dbConnect();
     
     const salt = await bcrypt.genSalt(10);
-    const hashedDevPassword = await bcrypt.hash('123123', salt);
+    const hashedDevPassword = await bcrypt.hash('7223913294', salt);
 
     const adminData = {
       username: 'admin',
-      email: 'admin@muscledenz.com',
-      firstname: 'Demo',
-      lastname: 'Admin',
+      email: 'denzmuscle@gmail.com',
+      firstname: 'Mahesh',
+      lastname: 'Kumar',
       type: 'Admin',
       confirmed: true,
-      identifier: 'admin@muscledenz.com',
-      phone: '1234567890',
+      identifier: 'denzmuscle@gmail.com',
+      phone: '7223913294',
       password: hashedDevPassword // Use the hashed password
     };
 

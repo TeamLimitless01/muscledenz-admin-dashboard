@@ -509,13 +509,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         </SelectTrigger>
                         <SelectContent>
                           {[
-                            "popular",
-                            "just-launched",
                             "ayurveda",
+                            "life-style",
+                            "just-launched",
+                            "popular",
                             "trending",
-                            "cosmetics-and-skincare",
-                            "protein-supplements",
-                            "sports-wears",
                           ].map((c: any) => (
                             <SelectItem key={c} value={c}>
                               {c}

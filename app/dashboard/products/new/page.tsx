@@ -354,13 +354,11 @@ export default function NewProductPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {[
-                        "popular",
-                        "just-launched",
                         "ayurveda",
+                        "life-style",
+                        "just-launched",
+                        "popular",
                         "trending",
-                        "cosmetics-and-skincare",
-                        "protein-supplements",
-                        "sports-wears",
                       ]?.map((c: any) => (
                         <SelectItem key={c} value={String(c)}>
                           {c}
