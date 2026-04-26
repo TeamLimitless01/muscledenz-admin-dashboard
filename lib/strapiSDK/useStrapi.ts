@@ -14,3 +14,11 @@ export function useStrapi(collection: string, query = {}, options = {}) {
     ...options,
   });
 }
+
+export function useStrapiOne(collection: string, id: string, query = {}, options = {}) {
+  return useSWR([collection, id, query], ([c, i, q]) => strapi.findOne(c, i, q), {
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    ...options,
+  });
+}

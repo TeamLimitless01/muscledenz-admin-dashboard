@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getProduct } from "@/lib/api/products"
 import { ArrowLeft, Edit, Package, DollarSign, Calendar, IndianRupee } from "lucide-react"
-import { useStrapi } from "@/lib/strapiSDK/useStrapi"
+import { useStrapi, useStrapiOne } from "@/lib/strapiSDK/useStrapi"
 import { renderImage } from "@/lib/renderImage"
 import { formatDate } from "@/lib/formatDate"
 
@@ -19,17 +19,11 @@ interface ProductPageProps {
 
 export default function ProductPage({ params }: ProductPageProps) {
   const { id } = use(params)
-  const { data, error, isLoading }:any = useStrapi('products',{
+  const { data, error, isLoading }:any = useStrapiOne('products', id, {
     populate: "*",
-    filters: { documentId: id },
   })
 
-  const product = useMemo(() => {
-    if (data && data.data && data.data.length > 0) {
-      return data.data[0]
-    }
-    return null
-  }, [data])
+  const product = data?.data || null
 
   // console.log(product)
 
@@ -90,14 +84,17 @@ export default function ProductPage({ params }: ProductPageProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {product?.images?.map((image:any, index:number) => (
-                  <img
-                    key={index}
-                    src={image.url ? renderImage(image.url) : '/placeholder.png'}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-64 object-cover rounded-md"
-                  />
-                ))}
+                {product?.images?.map((image: any, index: number) => {
+                  const imageUrl = typeof image === "string" ? image : image.url;
+                  return (
+                    <img
+                      key={index}
+                      src={imageUrl ? renderImage(imageUrl) : "/placeholder.png"}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-64 object-cover rounded-md"
+                    />
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

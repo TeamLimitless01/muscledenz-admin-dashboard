@@ -26,7 +26,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useStrapi } from "@/lib/strapiSDK/useStrapi";
+import { useStrapi, useStrapiOne } from "@/lib/strapiSDK/useStrapi";
 import { renderImage } from "@/lib/renderImage";
 import { strapi } from "@/lib/strapiSDK/strapi";
 import {
@@ -54,8 +54,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [subPaidAmount, setSubPaidAmount] = useState("");
 
-  const { data, error, isLoading, mutate } = useStrapi("users", {
-    filters: { documentId: id },
+  const { data, error, isLoading, mutate } = useStrapiOne("users", id, {
     populate: {
       profile: true,
       subscriptions: {
@@ -87,7 +86,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     filters: { publishedAt: { $notNull: true } },
   });
 
-  const user: any = (data as any)?.[0] || [];
+  const user: any = data?.data || null;
   const plans: any = plansData?.data || [];
 
   // --------- HANDLERS ----------

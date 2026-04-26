@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { getCategory } from "@/lib/api/categories";
 import { ArrowLeft, Edit, Package, Calendar, Hash } from "lucide-react";
-import { useStrapi } from "@/lib/strapiSDK/useStrapi";
+import { useStrapi, useStrapiOne } from "@/lib/strapiSDK/useStrapi";
 
 interface CategoryPageProps {
   params: Promise<{ id: string }>;
@@ -17,12 +17,11 @@ interface CategoryPageProps {
 
 export default function CategoryPage({ params }: CategoryPageProps) {
   const { id } = use(params);
-  const { data, error, isLoading } = useStrapi("categories", {
+  const { data, error, isLoading } = useStrapiOne("categories", id, {
     populate: "*",
-    filters: { documentId: id },
   });
 
-  const category: any = data?.data[0] || null;
+  const category: any = data?.data || null;
 
   if (isLoading) {
     return (
@@ -76,7 +75,13 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             </CardHeader>
             <CardContent>
               <img
-                src={category.thumbnail?.url || "/placeholder.svg"}
+                src={
+                  renderImage(
+                    typeof category.thumbnail === "string"
+                      ? category.thumbnail
+                      : category.thumbnail?.url
+                  ) || "/placeholder.svg"
+                }
                 alt={category.name}
                 className="w-full h-64 object-cover rounded-md"
               />

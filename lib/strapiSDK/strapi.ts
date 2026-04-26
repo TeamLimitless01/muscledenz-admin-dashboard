@@ -11,7 +11,9 @@ class LocalApiClient {
     if (typeof data === 'object') {
       const normalized: any = { ...data };
       if (data._id) {
-        normalized.id = data._id.toString();
+        const idStr = data._id.toString();
+        normalized.id = idStr;
+        normalized.documentId = idStr;
       }
       // Recursively normalize children
       for (const key in normalized) {

@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useStrapi } from "@/lib/strapiSDK/useStrapi";
+import { useStrapi, useStrapiOne } from "@/lib/strapiSDK/useStrapi";
 import { strapi } from "@/lib/strapiSDK/strapi";
 import { generateSlug } from "@/lib/generateSlug";
 
@@ -30,12 +30,11 @@ export default function EditCategoryPage({ params }: EditCategoryPageProps) {
   const router = useRouter();
 
   // fetch category
-  const { data, error, isLoading } = useStrapi("categories", {
+  const { data, error, isLoading } = useStrapiOne("categories", id, {
     populate: "*",
-    filters: { documentId: id },
   });
 
-  const category: any = data?.data[0] || null;
+  const category: any = data?.data || null;
 
   const [loading, setLoading] = useState(false);
   const [thumbnail, setThumbnail] = useState<any>("");

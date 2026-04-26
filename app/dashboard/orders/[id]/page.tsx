@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/table";
 // import { ordersApi } from "@/lib/api/orders"; // Not used directly in the component body
 // import useSWR from "swr"; // Not used directly in the component body
-import { useStrapi } from "@/lib/strapiSDK/useStrapi";
+import { useStrapi, useStrapiOne } from "@/lib/strapiSDK/useStrapi";
 // import { calculateDiscount } from "@/lib/calculateDiscount"; // Not used directly in the component body
 import { renderImage } from "@/lib/renderImage";
 import { useRouter } from "next/navigation";
@@ -45,7 +45,7 @@ interface OrderDetailPageProps {
 export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const { data, error, isLoading } = useStrapi("orders", {
+  const { data, error, isLoading } = useStrapiOne("orders", id, {
     populate: [
       "user",
       "product",
@@ -54,10 +54,9 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       "address",
       "document",
     ],
-    filters: { documentId: id },
   });
 
-  const order: any = data?.data?.[0] || null;
+  const order: any = data?.data || null;
 
   if (isLoading) {
     return (
