@@ -23,7 +23,7 @@ import {
 import { ArrowLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useStrapi } from "@/lib/strapiSDK/useStrapi";
+import { useStrapi, useStrapiOne } from "@/lib/strapiSDK/useStrapi";
 import { strapi } from "@/lib/strapiSDK/strapi";
 import { useForm, Controller } from "react-hook-form";
 
@@ -36,9 +36,10 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const router = useRouter();
 
   // Fetch product
-  const { data: product, error, isLoading }: any = useStrapi(`products/${id}`, {
+  const { data: productData, error, isLoading }: any = useStrapiOne(`products`, id, {
     populate: ["images", "category", "thumbnail"],
   });
+  const product = productData?.data;
 
   // Fetch categories
   const { data: catData }: any = useStrapi("categories", {});
@@ -80,11 +81,34 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         collectionType: product.collectionType
           ? String(product.collectionType)
           : "",
-        category: product.category?.id ? String(product.category.id) : "",
+        category: product.category?.id
+          ? String(product.category.id)
+          : typeof product.category === "string"
+          ? product.category
+          : "",
         ecomUrl: product.ecomUrl ?? "",
       });
-      setExistingImages(product.images ?? []);
-      setExistingThumbnail(product.thumbnail ?? null);
+
+      // Normalize images: handle strings or objects
+      if (product.images) {
+        const normalizedImages = product.images.map((img: any) =>
+          typeof img === "string" ? { url: img } : img
+        );
+        setExistingImages(normalizedImages);
+      } else {
+        setExistingImages([]);
+      }
+
+      // Normalize thumbnail: handle string or object
+      if (product.thumbnail) {
+        setExistingThumbnail(
+          typeof product.thumbnail === "string"
+            ? { url: product.thumbnail }
+            : product.thumbnail
+        );
+      } else {
+        setExistingThumbnail(null);
+      }
     }
   }, [product, reset]);
 
@@ -168,7 +192,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
         discount: Number(formData.discount),
-        category: formData.category || null, // Removed parseInt
+        category: formData.category || null,
         images: finalImageUrls,
         thumbnail: finalThumbnailUrl,
         collectionType: formData.collectionType || "",
@@ -510,9 +534,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           
                    
                   <div className="space-y-2">
-                    <Label htmlFor="discount">Amazon/Flipkart URL... *</Label>
+                    <Label htmlFor="ecomUrl">Amazon/Flipkart URL... *</Label>
                     <Input
-                      id="discount"
+                      id="ecomUrl"
                   placeholder="ex: https://www.amazon.in/your-product-url"
                       type="text"
                       {...register("ecomUrl", {
