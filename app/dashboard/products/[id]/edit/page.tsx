@@ -58,7 +58,22 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     reset,
     formState: { errors },
   } = useForm({
-    defaultValues: {
+    values: product ? {
+      name: product.name ?? "",
+      description: product.description ?? "",
+      price: product.price ? String(product.price) : "",
+      stock: product.stock ? String(product.stock) : "",
+      discount: product.discount ? String(product.discount) : "",
+      collectionType: product.collectionType
+        ? String(product.collectionType)
+        : "",
+      category: product.category?.id
+        ? String(product.category.id)
+        : typeof product.category === "string"
+        ? product.category
+        : "",
+      ecomUrl: product.ecomUrl ?? "",
+    } : {
       name: "",
       description: "",
       price: "",
@@ -72,23 +87,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   useEffect(() => {
     if (product) {
-      reset({
-        name: product.name ?? "",
-        description: product.description ?? "",
-        price: product.price ? String(product.price) : "",
-        stock: product.stock ? String(product.stock) : "",
-        discount: product.discount ? String(product.discount) : "",
-        collectionType: product.collectionType
-          ? String(product.collectionType)
-          : "",
-        category: product.category?.id
-          ? String(product.category.id)
-          : typeof product.category === "string"
-          ? product.category
-          : "",
-        ecomUrl: product.ecomUrl ?? "",
-      });
-
       // Normalize images: handle strings or objects
       if (product.images) {
         const normalizedImages = product.images.map((img: any) =>
@@ -240,7 +238,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        key={product?.id || "new"}
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
