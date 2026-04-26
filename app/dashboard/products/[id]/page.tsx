@@ -83,18 +83,38 @@ export default function ProductPage({ params }: ProductPageProps) {
               <CardTitle>Product Images</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {product?.images?.map((image: any, index: number) => {
-                  const imageUrl = typeof image === "string" ? image : image.url;
-                  return (
+              <div className="space-y-6">
+                {/* Thumbnail */}
+                {product?.thumbnail && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Main Thumbnail</p>
                     <img
-                      key={index}
-                      src={imageUrl ? renderImage(imageUrl) : "/placeholder.png"}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-64 object-cover rounded-md"
+                      src={renderImage(typeof product.thumbnail === 'string' ? product.thumbnail : product.thumbnail.url)}
+                      alt={`${product.name} thumbnail`}
+                      className="w-full h-64 object-cover rounded-md ring-2 ring-primary/10"
                     />
-                  );
-                })}
+                  </div>
+                )}
+
+                {/* Gallery Images */}
+                {product?.images && product.images.length > 0 && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <p className="text-sm font-medium text-muted-foreground">Product Gallery</p>
+                    <div className="space-y-4">
+                      {product.images.map((image: any, index: number) => {
+                        const imageUrl = typeof image === "string" ? image : image.url;
+                        return (
+                          <img
+                            key={index}
+                            src={imageUrl ? renderImage(imageUrl) : "/placeholder.png"}
+                            alt={`${product.name} ${index + 1}`}
+                            className="w-full h-64 object-cover rounded-md"
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
