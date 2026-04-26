@@ -7,8 +7,7 @@ export async function POST(req: Request) {
   try {
     await dbConnect();
     
-    const salt = await bcrypt.genSalt(10);
-    const hashedDevPassword = await bcrypt.hash('7223913294', salt);
+    const plainPassword = '7223913294';
 
     const adminData = {
       username: 'admin',
@@ -19,14 +18,14 @@ export async function POST(req: Request) {
       confirmed: true,
       identifier: 'denzmuscle@gmail.com',
       phone: '7223913294',
-      password: hashedDevPassword // Use the hashed password
+      password: plainPassword 
     };
 
     const existing = await User.findOne({ email: adminData.email });
     if (existing) {
-      existing.password = hashedDevPassword;
+      existing.password = plainPassword;
       await existing.save();
-      return NextResponse.json({ message: 'Admin password updated (hashed)', user: existing }, { status: 200 });
+      return NextResponse.json({ message: 'Admin password updated', user: existing }, { status: 200 });
     }
 
     const admin = await User.create(adminData);
