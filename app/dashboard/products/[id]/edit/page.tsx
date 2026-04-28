@@ -58,22 +58,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     reset,
     formState: { errors },
   } = useForm({
-    values: product ? {
-      name: product.name ?? "",
-      description: product.description ?? "",
-      price: product.price ? String(product.price) : "",
-      stock: product.stock ? String(product.stock) : "",
-      discount: product.discount ? String(product.discount) : "",
-      collectionType: product.collectionType
-        ? String(product.collectionType)
-        : "",
-      category: product.category?.id
-        ? String(product.category.id)
-        : typeof product.category === "string"
-        ? product.category
-        : "",
-      ecomUrl: product.ecomUrl ?? "",
-    } : {
+    defaultValues: {
       name: "",
       description: "",
       price: "",
@@ -87,6 +72,22 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
   useEffect(() => {
     if (product) {
+      reset({
+        name: product.name ?? "",
+        description: product.description ?? "",
+        price: product.price ? String(product.price) : "",
+        stock: product.stock ? String(product.stock) : "",
+        discount: product.discount ? String(product.discount) : "",
+        collectionType: product.collectionType ? String(product.collectionType) : "",
+        category: product.category?.id 
+          ? String(product.category.id) 
+          : product.category?._id 
+            ? String(product.category._id)
+            : typeof product.category === "string"
+              ? product.category
+              : "",
+        ecomUrl: product.ecomUrl ?? "",
+      });
       // Normalize images: handle strings or objects
       if (product.images) {
         const normalizedImages = product.images.map((img: any) =>
@@ -468,6 +469,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
+                        defaultValue={field?.value}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
@@ -502,6 +504,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     render={({ field }) => (
                       <Select
                         value={field.value}
+                         defaultValue={field?.value}
                         onValueChange={field.onChange}
                       >
                         <SelectTrigger>
