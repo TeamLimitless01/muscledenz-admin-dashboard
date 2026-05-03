@@ -208,6 +208,7 @@ export default function HomePageEditor() {
       // Our local API returns the object directly or wrapped in { data }
       const rawData = res.data || res;
       
+      
       setData({
         top_banners: (rawData.top_banners || []).map((url: string, index: number) => ({
           id: index,
