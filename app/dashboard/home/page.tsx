@@ -38,9 +38,14 @@ interface ImageFile {
   name: string;
 }
 
+interface AboutImageFile extends ImageFile {
+  title: string;
+  description: string;
+}
+
 interface HomePageData {
   top_banners: ImageFile[];
-  about_images: ImageFile[];
+  about_images: AboutImageFile[];
   reviews: Review[];
   headlineText: string;
 }
@@ -92,35 +97,57 @@ const ImageUploadArea = ({
 const ImageGallery = ({
   images,
   handleDeleteImage,
+  handleUpdateImage,
   field,
+  showDetails = false,
 }: {
-  images: ImageFile[];
+  images: any[];
   handleDeleteImage: (field: string, id: number) => void;
+  handleUpdateImage?: (field: string, id: number, key: string, value: string) => void;
   field: string;
+  showDetails?: boolean;
 }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       {images.map((img) => (
         <div
           key={img.id}
-          className="relative group border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+          className="relative flex flex-col group border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
         >
-          <img
-            src={img.url}
-            alt={img.name || "Uploaded image"}
-            className="h-32 w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-            <Button
-              size="icon"
-              variant="destructive"
-              className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 rounded-full h-8 w-8"
-              onClick={() => handleDeleteImage(field, img.id)}
-              title="Remove image"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+          <div className="relative">
+            <img
+              src={img.url}
+              alt={img.name || "Uploaded image"}
+              className="h-32 w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+              <Button
+                size="icon"
+                variant="destructive"
+                className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 rounded-full h-8 w-8"
+                onClick={() => handleDeleteImage(field, img.id)}
+                title="Remove image"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
+          {showDetails && handleUpdateImage && (
+            <div className="p-2 flex flex-col gap-2 bg-white">
+              <Input
+                placeholder="Title"
+                value={img.title || ""}
+                onChange={(e) => handleUpdateImage(field, img.id, "title", e.target.value)}
+                className="h-8 text-xs"
+              />
+              <Textarea
+                placeholder="Description"
+                value={img.description || ""}
+                onChange={(e) => handleUpdateImage(field, img.id, "description", e.target.value)}
+                className="h-16 text-xs resize-none"
+              />
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -187,11 +214,24 @@ export default function HomePageEditor() {
           url: url,
           name: `Banner ${index + 1}`,
         })),
-        about_images: (rawData.about_images || []).map((url: string, index: number) => ({
-          id: index,
-          url: url,
-          name: `About ${index + 1}`,
-        })),
+        about_images: (rawData.about_images || []).map((img: any, index: number) => {
+          if (typeof img === 'string') {
+            return {
+              id: index,
+              url: img,
+              name: `About ${index + 1}`,
+              title: "",
+              description: ""
+            };
+          }
+          return {
+            id: index,
+            url: img.url,
+            name: `About ${index + 1}`,
+            title: img.title || "",
+            description: img.description || ""
+          };
+        }),
         reviews: rawData.reviews || [],
         headlineText: rawData.headlineText || "",
       });
@@ -229,10 +269,11 @@ export default function HomePageEditor() {
           "Content-Type": "multipart/form-data",
         },
       });
-      const uploadedFiles: ImageFile[] = res.data.map((f: any) => ({
+      const uploadedFiles: any[] = res.data.map((f: any) => ({
         id: f.id,
         url: f.url,
         name: f.name,
+        ...(field === "about_images" ? { title: "", description: "" } : {})
       }));
 
       setData((prev) => {
@@ -262,7 +303,7 @@ export default function HomePageEditor() {
       if (!prev) return null;
       return {
         ...prev,
-        [field]: (prev[field as keyof HomePageData] as ImageFile[]).filter(
+        [field]: (prev[field as keyof HomePageData] as any[]).filter(
           (img) => img.id !== id
         ),
       };
@@ -270,6 +311,19 @@ export default function HomePageEditor() {
     toast.info(
       "Image removed locally. Click 'Update' to save changes to Strapi."
     );
+  };
+
+  // UPDATE image details locally
+  const handleUpdateImageDetails = (field: string, id: number, key: string, value: string) => {
+    setData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [field]: (prev[field as keyof HomePageData] as any[]).map((img) =>
+          img.id === id ? { ...img, [key]: value } : img
+        ),
+      };
+    });
   };
 
   // UPDATE all sections (partial save)
@@ -285,7 +339,11 @@ export default function HomePageEditor() {
       if (section === "banners") {
         payload.top_banners = data.top_banners.map((img) => img.url);
       } else if (section === "about") {
-        payload.about_images = data.about_images.map((img) => img.url);
+        payload.about_images = data.about_images.map((img) => ({
+          url: img.url,
+          title: img.title,
+          description: img.description
+        }));
       } else if (section === "reviews") {
         payload.reviews = data.reviews;
       } else if (section === "headLineText") {
@@ -455,7 +513,9 @@ export default function HomePageEditor() {
               <ImageGallery
                 images={aboutImages}
                 handleDeleteImage={handleDeleteImage}
+                handleUpdateImage={handleUpdateImageDetails}
                 field="about_images"
+                showDetails={true}
               />
               <ImageUploadArea
                 uploading={uploading}

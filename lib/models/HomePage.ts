@@ -6,9 +6,15 @@ const ReviewSchema = new mongoose.Schema({
   stars: { type: Number, min: 1, max: 5 }
 });
 
+const AboutImageSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  title: { type: String, default: '' },
+  description: { type: String, default: '' }
+});
+
 const HomePageSchema = new mongoose.Schema({
   top_banners: [{ type: String }], // Array of image URLs
-  about_images: [{ type: String }], // Array of image URLs
+  about_images: [AboutImageSchema], // Array of objects with url, title, description
   reviews: [ReviewSchema], // Repeatable component
   headlineText: { type: String }
 }, { timestamps: true });
